@@ -10,8 +10,8 @@
 
 
 # analysis
-!examples/
-!examples/*
+!analysis/
+!analysis/*
 
 
 # examples
