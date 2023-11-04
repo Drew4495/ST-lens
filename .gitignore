@@ -1,0 +1,39 @@
+# ingnore all
+*
+
+
+# gitignore
+!.gitignore
+
+# Makefile
+!Makefile
+
+
+# analysis
+!examples/
+!examples/*
+
+
+# examples
+!examples/
+!examples/*
+
+
+# src
+!src/
+!src/*
+!src/templates/
+!src/templates/*
+
+
+# Exensions to be ignored
+*.RData
+*.DS_Store
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.synctex.gz
+*.pdf
+*.zip
+.Rhistory
