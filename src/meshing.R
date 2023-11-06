@@ -31,7 +31,7 @@ dist_point_from_points <- function(p, points){
 # - Polygon hole 2 
 # - Polygon hole ...
 
-pol_clean <- function(pol){
+pol_clean <- function(pol, remove_holes = FALSE, minimum_area_hole = NULL){
   
   max_area <- 0
   holes <- list()
@@ -39,7 +39,17 @@ pol_clean <- function(pol){
   
   for(i in 1:length(pol@polygons[[1]]@Polygons)){
     if(pol@polygons[[1]]@Polygons[[i]]@hole){
-      holes <- c(holes, pol@polygons[[1]]@Polygons[[i]])
+      if(!is.null(minimum_area_hole)){
+        if(pol@polygons[[1]]@Polygons[[i]]@area > minimum_area_hole){
+          holes <- c(holes, pol@polygons[[1]]@Polygons[[i]])
+        } else {
+          if(VERBOSE){
+            cat("\nAn hole has been removed!\n")
+          }
+        }
+      } else {
+        holes <- c(holes, pol@polygons[[1]]@Polygons[[i]])
+      }
     } else{
       if(pol@polygons[[1]]@Polygons[[i]]@area > max_area){
         max_area <- pol@polygons[[1]]@Polygons[[i]]@area
@@ -52,7 +62,11 @@ pol_clean <- function(pol){
     }
   }
   
-  domain_new <- SpatialPolygons(list(Polygons(c(domain, holes), ID = "domain")))
+  if(!remove_holes){
+    domain_new <- SpatialPolygons(list(Polygons(c(domain, holes), ID = "domain")))
+  } else {
+    domain_new <- SpatialPolygons(list(Polygons(list(domain), ID = "domain")))
+  }
   
   return(domain_new)
 }
@@ -212,35 +226,41 @@ square <- function(p, h) {
 ## Domain ----
 ## |||||||||||
 
-simplify_domain <- function(lattice, keep) {
+simplify_domain <- function(lattice, keep,
+                            remove_holes = FALSE, minimum_area_hole = NULL,
+                            keep_hole = 1) {
   
   domain <- lattice$domain
   grid <- lattice$grid
   
   # Remove outliers
-  domain <- pol_clean(domain)
+  domain <- pol_clean(domain, remove_holes, minimum_area_hole)
   
   # Simplify outer boundary
   boundary <- SpatialPolygons(list(Polygons(list(domain@polygons[[1]]@Polygons[[1]]), ID = "boundary")))
   new_boundary <- ms_simplify(boundary, keep = keep)
   domain@polygons[[1]]@Polygons[[1]] <- new_boundary@polygons[[1]]@Polygons[[1]]
   
-  # Remove grid points outside the new domain
-  grid <- SpatialPoints(grid[!is.na(over(SpatialPoints(grid), domain)),])
-  
   # Boundary points
   points.b <- pol_coords(domain)
   
-  # Holes boundary points
+  # Holes
   points.h <- list()
   if(pol_holes_number(domain) >= 1){
     for(i in 1:pol_holes_number(domain)){
+      
+      # Simplify hole boundary
+      boundary <- SpatialPolygons(list(Polygons(list(domain@polygons[[1]]@Polygons[[1+i]]), ID = "hole")))
+      new_boundary <- ms_simplify(boundary, keep = keep_hole)
+      domain@polygons[[1]]@Polygons[[1+i]] <- new_boundary@polygons[[1]]@Polygons[[1]]
+      domain@polygons[[1]]@Polygons[[1+i]]@hole = TRUE
+      
+      # Holes boundary points
       points.h[[i]] <- pol_holes_coords(domain, i)
     }
   }
   
   return(list(domain = domain,
-              grid = grid,
               points.b = points.b,
               points.h = points.h))
 }

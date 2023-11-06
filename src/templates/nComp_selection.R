@@ -19,7 +19,7 @@ residuals_norm <- c(residuals_norm, residuals/norm)
 ## Save results ----
 ## |||||||||||||||||
 
-save(residuals_norm, nComp_opt, loadings,
+save(residuals_norm, nComp_opt, scores, loadings, loadings_nodes,
      # Saving options
      file = paste(directory.results, name.dataset, "_nComp_selection", ".RData", sep = ""))
 

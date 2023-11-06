@@ -126,7 +126,8 @@ plot.final_locations <- function(locations, locations.final, lattice, size = 1) 
 # Plots the functional components
 
 plot.components <- function(locations, loadings, type = "points",
-                            size = 1,  colormap = "D", limits = NULL) {
+                            size = 1,  colormap = "D", limits = NULL,
+                            ncol = 5) {
   
   plots <- list()
   for(i in 1:ncol(loadings)){
@@ -142,7 +143,7 @@ plot.components <- function(locations, loadings, type = "points",
     plots[[i]] <- plots[[i]] + ggtitle(paste("Comp", i)) + xlab("") + ylab("")
   }
   
-  plot <- arrangeGrob(grobs = plots, ncol = min(5, nComp))
+  plot <- arrangeGrob(grobs = plots, ncol = min(ncol, nComp))
   
   return(plot)
 }

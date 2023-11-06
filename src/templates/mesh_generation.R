@@ -16,8 +16,12 @@ lattice <- generate_lattice(locations, h, bbox, seed_point, type)
 
 # Domain simplification
 # simplification <- 0.09
-lattice_simplified <- simplify_domain(lattice, simplification)
-
+# remove_holes <- FALSE
+# minimum_area_hole <- NULL
+# simplification_hole <- 1
+lattice_simplified <- simplify_domain(lattice, simplification,
+                                      remove_holes, minimum_area_hole,
+                                      simplification_hole)
 
 ## Discarded locations ----
 ## ||||||||||||||||||||||||
@@ -41,8 +45,7 @@ mesh <- generate_mesh(lattice_simplified, maximum_area)
 lattice <- lattice_simplified
 
 save(locations.final,
-     mesh,
-     lattice,
+     mesh, lattice,
      # Saving options
      file = paste(directory.results, name.dataset, "_mesh", ".RData", sep = ""))
 
@@ -50,10 +53,8 @@ save(locations.final,
 ## Clean ----
 ## ||||||||||
 
-rm(lattice, lattice_simplified, mesh,
-   locations, locations.final,
-   indexes.discarded_locations, names.locations,
-   plot)
+rm(lattice, lattice_simplified, mesh, locations.final,
+   indexes.discarded_locations, names.locations)
 
 
 

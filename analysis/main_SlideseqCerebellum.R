@@ -1,6 +1,6 @@
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%
-# %% Analysis HER2 dataset %%
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# %% Analysis SlideseqCerebellum dataset %%
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 rm(list = ls())
 graphics.off()
@@ -9,10 +9,10 @@ VERBOSE <- TRUE
 PLOT <- TRUE
 fdaPDE <- TRUE
 
-# setwd("~/ST-lens")
+setwd("~/ST-lens")
 source("src/cat_utilities.R")
 
-cat.script_title("Analysis HER2 dataset")
+cat.script_title("Analysis SlideseqCerebellum dataset")
 
 
 # ||||||||||||||
@@ -45,10 +45,10 @@ source("src/clustering.R")
 cat.section_title("Global variables")
 
 # Directories
-directory.initial_data <- "data/HER2/"
-directory.results <- "results/HER2/"
-directory.images <- "images/HER2/"
-name.dataset <- "HER2"
+directory.initial_data <- "data/SlideseqCerebellum/"
+directory.results <- "results/SlideseqCerebellum/"
+directory.images <- "images/SlideseqCerebellum/"
+name.dataset <- "SlideseqCerebellum"
 
 # Code flow control
 RUN <- list()
@@ -56,8 +56,6 @@ RUN[["Pre-Processing"]] <- FALSE
 RUN[["Mesh Generation"]] <- FALSE
 RUN[["Mean estimation"]] <- FALSE
 RUN[["Optimal nComp selection"]] <- FALSE
-RUN[["Optimal components"]] <- FALSE
-RUN[["Clustering at locations"]] <- FALSE
 RUN[["Clustering on HR grid"]] <- FALSE
 
 
@@ -95,7 +93,7 @@ names.genes.initial <- rownames(counts)
 # Pre-Processing ----
 # |||||||||||||||||||
 
-sparkversion <- "spark" # "sparkX"
+sparkversion <- "sparkX" # "sparkX"
 numCores_spark <- 1
 number.genes <- 3000
 min.loctions <- 20
@@ -146,15 +144,15 @@ if(PLOT){
 }
 
 # Hyper-parameters
-h <- 1
+h <- 100
 bbox <- NULL
-seed_point <- SpatialPoints(data.frame(x = 11, y = -11))
-type <- "square"
-simplification <- 0.15
-remove_holes <- FALSE
-minimum_area_hole <- NULL
-simplification_hole <- 1
-maximum_area <- 0.3
+seed_point <- NULL
+type = "hexagonal"
+simplification <- 0.05
+remove_holes <- TRUE
+minimum_area_hole <- 10000
+simplification_hole <- 0.25
+maximum_area <- 5000
 
 # Mesh generation
 tic()
@@ -167,6 +165,7 @@ times[["Mesh Generation"]] <- as.numeric(elapsed$toc - elapsed$tic)
 load(paste(directory.results, name.dataset, "_mesh.RData", sep = ""))
 
 # Processed data
+locations.prev <- locations
 locations <- locations.final
 names.locations <- rownames(locations)
 mesh <- mesh
@@ -182,11 +181,11 @@ if(VERBOSE){
 
 # Plot final locations
 if(PLOT){
-  plot <- plot.final_locations(SpatialPoints(locations.initial),
-                               SpatialPoints(locations), lattice)
+  plot <- plot.final_locations(SpatialPoints(locations.prev),
+                               SpatialPoints(locations.final), lattice)
   plot <- plot + xlab("") + ylab("") + ggtitle("Final locations")
   ggsave(paste(directory.images, "final_locations.jpg", sep = ""),
-         plot = plot, width = 5, height = 5, dpi = 200)
+         plot = plot, width = 5, height = 6, dpi = 200)
 }
 
 # Plot mesh
@@ -194,7 +193,7 @@ if(PLOT){
   plot <- plot.fdaPDE_mesh(mesh)
   plot <- plot + xlab("") + ylab("") + ggtitle("Mesh")
   ggsave(paste(directory.images, "mesh.jpg", sep = ""),
-         plot = plot, width = 5, height = 5, dpi = 200)
+         plot = plot, width = 5, height = 6, dpi = 200)
 }
 
 # Clean
@@ -210,11 +209,9 @@ cat.section_title("Data Decomposition")
 # Update counts about eventually discarded locations:
 counts <- counts[, names.locations]
 counts.normalized <- counts.normalized[, names.locations]
-true_labels <- data.frame(true_label = true_labels.initial[names.locations, ])
-row.names(true_labels) <- names.locations
 
 # HR grid
-grid <- square_grid(SpatialPoints(locations)@bbox, 1/3, seed_point = seed_point)
+grid <- square_grid(SpatialPoints(locations)@bbox, 50, seed_point = seed_point)
 grid <- grid[!is.na(over(SpatialPoints(grid), lattice$domain)),]
 
 # Plot
@@ -222,8 +219,8 @@ if(PLOT){
   plot <- ggplot() +
     standard_plot_settings() + 
     xlab("x") + ylab("y") + ggtitle("HR grid") +
-    geom_sf(data = st_as_sf(SpatialPoints(grid)), color = "black", size = 0.25) +
-    geom_sf(data = st_as_sf(SpatialPoints(locations)), color = "red", size = 0.25)
+    geom_sf(data = st_as_sf(SpatialPoints(grid)), color = "black", size = 0.25) #+
+    # geom_sf(data = st_as_sf(SpatialPoints(locations)), color = "red", size = 0.25)
   ggsave(paste(directory.images, "HR_grid.jpg", sep = ""),
          plot = plot, width = 5, height = 5, dpi = 200)
 }
@@ -235,7 +232,7 @@ if(PLOT){
 cat.subsection_title("Mean estimation")
 
 # Hyper-parameters
-lambdas <- 10^seq(-9, 2, by = 1)
+lambdas <- 10^seq(-2, 4, by = 0.2)
 
 # Mean estimation
 tic()
@@ -267,9 +264,9 @@ if(PLOT){
 ## ||||||||||||||||||||||||||||
 
 # Hyper-parameters
-lambda <- lambda_opt
+lambda <- 10^4.2 # lambda_opt
 nComp <- 20
-nComp_opt <- 4
+nComp_opt <- 7
 
 tic()
 if(RUN[["Optimal nComp selection"]])
@@ -287,10 +284,14 @@ scores <- scores
 loadings <- loadings
 loadings_nodes <- loadings_nodes
 
-# Plot components
+# Plot components HR all
 if(PLOT){
-  plot <- plot.components(locations, loadings, size = 2.5)
-  ggsave(paste(directory.images, "components_all.jpg", sep = ""),
+  loadings_HR <- NULL
+  for(h in 1:nComp){
+    loadings_HR <- cbind(loadings_HR, field.eval(grid, loadings_nodes[,h], mesh))
+  }
+  plot <- plot.components(grid, loadings_HR, type = "tile")
+  ggsave(paste(directory.images, "components_all_HR.jpg", sep = ""),
          plot = plot, width = 3*5, height = 3*4, dpi = 200)
 }
 
@@ -301,150 +302,28 @@ if(PLOT){
          plot = plot, width = 9, height = 6, dpi = 200)
 }
 
-# Clean
-rm(residuals_norm, scores, loadings, loadings_nodes)
-
-
-## Optimal components ----
-## |||||||||||||||||||||||
-
-# Hyper-parameters
-lambdas <- 10^seq(-4, 2, by = 0.2)
-nComp <- nComp_opt
-
-# Optimal components
-tic()
-if(RUN[["Optimal components"]])
-  source("src/templates/optimal_components.R")
-elapsed <- toc(quiet = TRUE)
-times[["Optimal components"]] <- as.numeric(elapsed$toc - elapsed$tic)
-
-# Load generated data
-load(paste(directory.results, name.dataset, "_components.RData", sep = ""))
-
-# Processed data
-scores <- scores
-loadings <- loadings
-loadings_nodes <- loadings_nodes
-
-# Plot components
-if(PLOT){
-  plot <- plot.components(locations, loadings, size = 2.5)
-  ggsave(paste(directory.images, "components.jpg", sep = ""),
-         plot = plot, width = 3*nComp, height = 3*1, dpi = 200)
-}
-
-# Plot components HR
+# Plot components HR selected
 if(PLOT){
   loadings_HR <- NULL
-  for(h in 1:nComp){
+  for(h in 1:nComp_opt){
     loadings_HR <- cbind(loadings_HR, field.eval(grid, loadings_nodes[,h], mesh))
   }
-  plot <- plot.components(grid, loadings_HR, type = "tile")
-  ggsave(paste(directory.images, "components_HR.jpg", sep = ""),
-         plot = plot, width = 3*nComp, height = 3*1, dpi = 200)
+  plot <- plot.components(grid, loadings_HR, type = "tile", ncol = nComp_opt)
+  ggsave(paste(directory.images, "components_all_HR.jpg", sep = ""),
+         plot = plot, width = 3*nComp_opt, height = 3*1, dpi = 200)
 }
+
+# Clean
+rm(residuals_norm)
 
 
 # Clustering ----
 # |||||||||||||||
 
-## Clustering at locations ----
-## ||||||||||||||||||||||||||||
-
 # Hyper-parameters
-nComp_opt <- nComp
-clusternum <- 6
-knearest <- round(sqrt(nrow(locations)))
-
-# Clustering at locations
-tic()
-if(RUN[["Clustering at locations"]]){
-  
-  # ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-  
-  # Assembling data for clustering
-  data.clustering <- NULL
-  for(i in 1:nComp){
-    data.clustering <- cbind(data.clustering, loadings[,i])
-  }
-  
-  # Clustering
-  cluster_labels <- walktrap_clustering(clusternum = clusternum,
-                                        latent_dat = t(data.clustering[,1:nComp_opt]),
-                                        knearest = knearest)
-  cluster_labels_refined <- refine_cluster_10x(cluster_labels,
-                                               locations,
-                                               shape = "square")
-  
-  
-  # Performance index
-  names.locations_not_unknown <- rownames(locations[true_labels!=7,])
-  
-  names(cluster_labels) <- names.locations
-  ARI <- adjustedRandIndex(true_labels[names.locations_not_unknown,],
-                           cluster_labels[names.locations_not_unknown])
-  names(cluster_labels_refined) <- names.locations
-  ARI_refiend <- adjustedRandIndex(true_labels[names.locations_not_unknown,],
-                                   cluster_labels_refined[names.locations_not_unknown])
-  
-  # Save clusters
-  save(cluster_labels, cluster_labels_refined,
-       ARI, ARI_refiend,
-       # Saving options
-       file = paste(directory.results, name.dataset, "_clusters_at_locations", ".RData", sep = ""))
-  
-  
-  # Clean
-  rm(cluster_labels, cluster_labels_refined,
-     ARI, ARI_refiend,
-     names.locations_not_unknown)
-  
-  # ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-}
-elapsed <- toc(quiet = TRUE)
-times[["Clustering at locations"]] <- as.numeric(elapsed$toc - elapsed$tic)
-
-# Load generated data
-load(paste(directory.results, name.dataset, "_clusters_at_locations.RData", sep = ""))
-
-# Processed data
-cluster_labels <- cluster_labels
-cluster_labels_refined <- cluster_labels_refined
-ARI <- ARI
-ARI_refiend <- ARI_refiend
-
-# Stats
-if(VERBOSE){
-  cat("\nStats")
-  cat(paste("\n- ARI:", ARI))
-  cat(paste("\n- ARI refined: ", ARI_refiend))
-}
-
-# Plot cluster
-if(PLOT){
-  plot <- plot.field_points(locations, cluster_labels, colormap = "H", size = 4, discrete = TRUE) +
-    ggtitle("Clustering") + xlab("") + ylab("")
-  ggsave(paste(directory.images, "clusters_locations.jpg", sep = ""),
-         plot = plot, width = 5, height = 5, dpi = 200)
-}
-
-# Plot cluster refined
-if(PLOT){
-  plot <- plot.field_points(locations, cluster_labels_refined, colormap = "H", size = 4, discrete = TRUE) +
-    ggtitle("Clustering refined") + xlab("") + ylab("")
-  ggsave(paste(directory.images, "clusters_refined_locations.jpg", sep = ""),
-         plot = plot, width = 5, height = 5, dpi = 200)
-}
-
-
-## Clustering on HR grid ----
-## ||||||||||||||||||||||||||
-
-# Hyper-parameters
-nComp_opt <- nComp
-clusternum <- 6
-knearest <- 200 # round(sqrt(nrow(grid)))
+nComp_opt <- nComp_opt
+clusternum <- 8
+knearest <- round(sqrt(nrow(grid)))
 
 tic()
 
@@ -460,7 +339,7 @@ if(RUN[["Clustering on HR grid"]]){
   }
   
   # Clustering
-  cluster_labels_HR <- walktrap_clustering(clusternum = clusternum,
+  cluster_labels_HR <- louvain_clustering(clusternum = clusternum,
                                            latent_dat = t(data.clustering[,1:nComp_opt]),
                                            knearest = knearest)
   cluster_labels_refined_HR <- refine_cluster_10x(cluster_labels_HR,
@@ -476,20 +355,13 @@ if(RUN[["Clustering on HR grid"]]){
     
   }
   
-  # Performance index
-  names.locations_not_unknown <- rownames(locations[true_labels!=7,])
-  ARI_downsampled <- adjustedRandIndex(true_labels[names.locations_not_unknown,],
-                                       cluster_labels_downsamples[names.locations_not_unknown])
-  
   # Save clusters
   save(cluster_labels_HR, cluster_labels_refined_HR, cluster_labels_downsamples,
-       ARI_downsampled,
        # Saving options
        file = paste(directory.results, name.dataset, "_clusters_on_HR_grid", ".RData", sep = ""))
   
   # Clean
   rm(cluster_labels_HR, cluster_labels_refined_HR, cluster_labels_downsamples,
-     ARI_downsampled,
      names.locations_not_unknown)
   
   # ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -505,17 +377,10 @@ load(paste(directory.results, name.dataset, "_clusters_on_HR_grid.RData", sep = 
 cluster_labels_HR <- cluster_labels_HR
 cluster_labels_refined_HR <- cluster_labels_refined_HR
 cluster_labels_downsamples <- cluster_labels_downsamples
-ARI_downsampled <- ARI_downsampled
-
-# Stats
-if(VERBOSE){
-  cat("\nStats")
-  cat(paste("\n- ARI downsampled: ", ARI_downsampled))
-}
 
 # Plot cluster HR
 if(PLOT){
-  plot <- plot.field_points(grid, cluster_labels_HR, colormap = "H", size = 1, discrete = TRUE) +
+  plot <- plot.field_points(grid, cluster_labels_HR, colormap = "H", size = 0.4, discrete = TRUE) +
     ggtitle("HR Clustering") + xlab("") + ylab("")
   ggsave(paste(directory.images, "clusters_HR.jpg", sep = ""),
          plot = plot, width = 5, height = 5, dpi = 200)
@@ -523,7 +388,7 @@ if(PLOT){
 
 # Plot cluster refined HR
 if(PLOT){
-  plot <- plot.field_points(grid, cluster_labels_refined_HR, colormap = "H", size = 1, discrete = TRUE) +
+  plot <- plot.field_points(grid, cluster_labels_refined_HR, colormap = "H", size = 0.4, discrete = TRUE) +
     ggtitle("HR Clustering refined") + xlab("") + ylab("")
   ggsave(paste(directory.images, "clusters_refined_HR.jpg", sep = ""),
          plot = plot, width = 5, height = 5, dpi = 200)
@@ -531,10 +396,13 @@ if(PLOT){
 
 # Plot cluster down-sampled
 if(PLOT){
-  plot <- plot.field_points(locations, cluster_labels_downsamples, colormap = "H", size = 4, discrete = TRUE) +
+  plot <- plot.field_points(locations, cluster_labels_downsamples, colormap = "H", size = 0.2, discrete = TRUE) +
     ggtitle("Clustering down-sampled") + xlab("") + ylab("")
   ggsave(paste(directory.images, "clusters_downsampled.jpg", sep = ""),
          plot = plot, width = 5, height = 5, dpi = 200)
 }
+
+
+
 
 

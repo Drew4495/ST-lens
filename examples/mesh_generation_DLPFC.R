@@ -1,11 +1,12 @@
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# %% Example: HER2 mesh generation %%
-# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# %% Example: DLPFC mesh generation %%
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 rm(list = ls())
 graphics.off()
 
 VERBOSE <- TRUE
+fdaPDE <- FALSE
 
 # setwd("~/ST-lens")
 source("src/cat_utilities.R")
@@ -201,6 +202,11 @@ simplification <- 0.25
 # The user should set a value such that the boundary is simplified enough
 # but without exeeding otherwise there will be a lot of discarded points
 
+# About holes
+remove_holes <- FALSE
+minimum_area_hole <- NULL
+simplification_hole <- 0.5
+
 # Lattice
 lattice <- generate_lattice(locations, h, locations@bbox, seed_point, type = type)
 
@@ -213,7 +219,8 @@ ggsave(paste(directory.images, "6_domain.jpg", sep = ""),
        plot = plot, width = 6.5, height = 7, dpi = 200)
 
 # Simplification
-lattice_simplified <- simplify_domain(lattice, simplification)
+lattice_simplified <- simplify_domain(lattice, simplification,
+                                      remove_holes, minimum_area_hole, simplification_hole)
 
 # During this step the islands, namely the parts of domain that are not joined 
 # to the one with largest, area are discarded
