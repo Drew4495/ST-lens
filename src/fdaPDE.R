@@ -84,7 +84,7 @@ fPCA_normalize <- function(scores, loadings, loadings_nodes) {
 
 # Functional Regression with PDE regularization model
 
-FRPDE <- function(mesh, locations, data, lambdas, verbose = FALSE){
+FRPDE <- function(mesh, locations, X, lambdas, verbose = FALSE){
   
   # Define and init model
   model_FRPDE <- new(FRPDE_Laplacian_2D_GeoStatLocations, pde.init(mesh))
@@ -94,7 +94,7 @@ FRPDE <- function(mesh, locations, data, lambdas, verbose = FALSE){
   model_FRPDE$set_locations(as.matrix(locations))
   
   # Set observations
-  model_FRPDE$set_observations(as.matrix(counts))
+  model_FRPDE$set_observations(as.matrix(X))
   
   # Tune
   lambda_opt <- model_FRPDE$tune(lambdas)

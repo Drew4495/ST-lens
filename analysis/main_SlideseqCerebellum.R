@@ -9,7 +9,7 @@ VERBOSE <- TRUE
 PLOT <- TRUE
 fdaPDE <- TRUE
 
-setwd("~/ST-lens")
+# setwd("~/ST-lens")
 source("src/cat_utilities.R")
 
 cat.script_title("Analysis SlideseqCerebellum dataset")
@@ -309,7 +309,7 @@ if(PLOT){
     loadings_HR <- cbind(loadings_HR, field.eval(grid, loadings_nodes[,h], mesh))
   }
   plot <- plot.components(grid, loadings_HR, type = "tile", ncol = nComp_opt)
-  ggsave(paste(directory.images, "components_all_HR.jpg", sep = ""),
+  ggsave(paste(directory.images, "components_selected_HR.jpg", sep = ""),
          plot = plot, width = 3*nComp_opt, height = 3*1, dpi = 200)
 }
 
@@ -322,7 +322,7 @@ rm(residuals_norm)
 
 # Hyper-parameters
 nComp_opt <- nComp_opt
-clusternum <- 8
+clusternum <- 9
 knearest <- round(sqrt(nrow(grid)))
 
 tic()

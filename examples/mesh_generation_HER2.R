@@ -68,12 +68,11 @@ ymin <- -36
 ymax <- -7
 
 # Plot
-plot <- ggplot() + standard_plot_settings() +
-  xlab("") + ylab("") + ggtitle("Initial locations") + 
+plot <- ggplot() + mesh_generation_examples_plot_settings() +
   xlim(xmin, xmax) + ylim(ymin, ymax) +
-  geom_sf(data = st_as_sf(locations), color = "black", size = 1)
-ggsave(paste(directory.images, "0_initial_locations.jpg", sep = ""),
-       plot = plot, width = 6.5, height = 7, dpi = 200)
+  geom_sf(data = st_as_sf(locations), color = "black", size = 0.1)
+ggsave(paste(directory.images, "0_initial_locations.pdf", sep = ""),
+       plot = plot, width = 6, height = 5, dpi = "print", units = "cm")
 
 
 # ||||||||||||||||||||||||||
@@ -99,27 +98,24 @@ seed_point <- SpatialPoints(data.frame(x = 11, y = -11))
 # contain this point. It is used to have always the same grid.
 
 # Plot
-plot <- ggplot() +
-  standard_plot_settings() + 
-  xlab("x") + ylab("y") + ggtitle("Check Parameters") +
+plot <- ggplot() + mesh_generation_examples_plot_settings() +
   xlim(xmin, xmax) + ylim(ymin, ymax) +
-  geom_sf(data = st_as_sf(locations), color = "black", size = 1) +
-  geom_sf(data = st_as_sf(seed_point), color = "red", size = 1.5) +
+  geom_sf(data = st_as_sf(locations), color = "black", size = 0.1) +
+  geom_sf(data = st_as_sf(seed_point), color = "red", size = 0.15) +
   geom_sf(data = st_as_sf(square(seed_point, h/sqrt(2))), fill = "blue", alpha = 0.5, color = "black")
-ggsave(paste(directory.images, "1_initial_locations_check.jpg", sep = ""),
-       plot = plot, width = 6.5, height = 7, dpi = 200)
+ggsave(paste(directory.images, "1_initial_locations_check.pdf", sep = ""),
+       plot = plot, width = 6, height = 5, dpi = "print", units = "cm")
 
 # Grid generation
 grid <- generate_grid(locations@bbox, h, seed_point, type = type)
 
 # Plot
-plot <- ggplot() + standard_plot_settings() +
-  xlab("") + ylab("") + ggtitle("Hexagonal Grid") + 
+plot <- ggplot() + mesh_generation_examples_plot_settings() +
   xlim(xmin, xmax) + ylim(ymin, ymax) +
-  geom_sf(data = st_as_sf(grid), color = "blue", size = 0.5) +
-  geom_sf(data = st_as_sf(seed_point), color = "red", size = 1)
-ggsave(paste(directory.images, "2_grid.jpg", sep = ""),
-       plot = plot, width = 6.5, height = 7, dpi = 200)
+  geom_sf(data = st_as_sf(grid), color = "blue", size = 0.05) +
+  geom_sf(data = st_as_sf(seed_point), color = "red", size = 0.1)
+ggsave(paste(directory.images, "2_grid.pdf", sep = ""),
+       plot = plot, width = 6, height = 5, dpi = "print", units = "cm")
 
 
 ## Lattice ----
@@ -142,30 +138,27 @@ lattice <- SpatialPolygons(list(Polygons(polygons, ID = "lattice")))
 lattice_all <- SpatialPolygons(list(Polygons(polygons_all, ID = "lattice")))
 
 # Plot all
-plot <- ggplot() + standard_plot_settings() +
-  xlab("") + ylab("") + ggtitle("Lattice") +
+plot <- ggplot() + mesh_generation_examples_plot_settings() +
   xlim(xmin, xmax) + ylim(ymin, ymax) +
   geom_sf(data = st_as_sf(lattice_all), fill = "blue", alpha = 0.5, color = "black")
-ggsave(paste(directory.images, "3_lattice.jpg", sep = ""),
-       plot = plot, width = 6.5, height = 7, dpi = 200)
+ggsave(paste(directory.images, "3_lattice.pdf", sep = ""),
+       plot = plot, width = 6, height = 5, dpi = "print", units = "cm")
 
 # Plot all and locations
-plot <- ggplot() + standard_plot_settings() +
-  xlab("") + ylab("") + ggtitle("Lattice and locations") +
+plot <- ggplot() + mesh_generation_examples_plot_settings() +
   xlim(xmin, xmax) + ylim(ymin, ymax) +
   geom_sf(data = st_as_sf(lattice_all), fill = "blue", alpha = 0.5, color = "black") +
-  geom_sf(data = st_as_sf(locations), color = "black", size = 1)
-ggsave(paste(directory.images, "4_lattice_and_locations.jpg", sep = ""),
-       plot = plot, width = 6.5, height = 7, dpi = 200)
+  geom_sf(data = st_as_sf(locations), color = "black", size = 0.1)
+ggsave(paste(directory.images, "4_lattice_and_locations.pdf", sep = ""),
+       plot = plot, width = 6, height = 5, dpi = "print", units = "cm")
 
 # Plot selected
-plot <- ggplot() + standard_plot_settings() +
-  xlab("") + ylab("") + ggtitle("Selected hexagons") +
+plot <- ggplot() + mesh_generation_examples_plot_settings() +
   xlim(xmin, xmax) + ylim(ymin, ymax) +
   geom_sf(data = st_as_sf(lattice), fill = "blue", alpha = 0.5, color = "black")+
-  geom_sf(data = st_as_sf(locations), color = "black", size = 1)
-ggsave(paste(directory.images, "5_lattice_only_selected.jpg", sep = ""),
-       plot = plot, width = 6.5, height = 7, dpi = 200)
+  geom_sf(data = st_as_sf(locations), color = "black", size = 0.1)
+ggsave(paste(directory.images, "5_lattice_only_selected.pdf", sep = ""),
+       plot = plot, width = 6, height = 5, dpi = "print", units = "cm")
 
 
 ## Simplification ----
@@ -186,12 +179,11 @@ simplification_hole <- 1
 lattice <- generate_lattice(locations, h, locations@bbox, seed_point, type = "square")
 
 # Plot
-plot <- ggplot() + standard_plot_settings() +
-  xlab("") + ylab("") + ggtitle("Domain") +
+plot <- ggplot() + mesh_generation_examples_plot_settings() +
   xlim(xmin, xmax) + ylim(ymin, ymax) +
   geom_sf(data = st_as_sf(lattice$domain), fill = "grey", alpha = 0.5, color = "black")
-ggsave(paste(directory.images, "6_domain.jpg", sep = ""),
-       plot = plot, width = 6.5, height = 7, dpi = 200)
+ggsave(paste(directory.images, "6_domain.pdf", sep = ""),
+       plot = plot, width = 6, height = 5, dpi = "print", units = "cm")
 
 # Simplification
 lattice_simplified <- simplify_domain(lattice, simplification,
@@ -201,22 +193,22 @@ lattice_simplified <- simplify_domain(lattice, simplification,
 # to the one with largest, area are discarded
 
 # Plot
-plot <- plot.discretized_domain(lattice_simplified) +
-  xlab("") + ylab("") + ggtitle("Domain simplified") +
+plot <- plot.discretized_domain(lattice_simplified, size = 0.1) +
+  mesh_generation_examples_plot_settings() +
   xlim(xmin, xmax) + ylim(ymin, ymax) + guides(color = "none")
-ggsave(paste(directory.images, "7_domain_simplified.jpg", sep = ""),
-       plot = plot, width = 6.5, height = 7, dpi = 200)
+ggsave(paste(directory.images, "7_domain_simplified.pdf", sep = ""),
+       plot = plot, width = 6, height = 5, dpi = "print", units = "cm")
 
 # Discarded points
 indexes.discarded_locations <- is.na(over(locations, lattice_simplified$domain))
 locations.final <- locations[!indexes.discarded_locations,]
 
 # Plot
-plot <- plot.final_locations(locations, SpatialPoints(locations.final), lattice_simplified, size = 0.5) +
-  xlab("") + ylab("") + ggtitle("Final locations") +
+plot <- plot.final_locations(locations, SpatialPoints(locations.final), lattice_simplified, size = 0.05) +
+  mesh_generation_examples_plot_settings() +
   xlim(xmin, xmax) + ylim(ymin, ymax)
-ggsave(paste(directory.images, "8_final_locations.jpg", sep = ""),
-       plot = plot, width = 6.5, height = 7, dpi = 200)
+ggsave(paste(directory.images, "8_final_locations.pdf", sep = ""),
+       plot = plot, width = 6, height = 5, dpi = "print", units = "cm")
 
 
 # ||||||||||||
@@ -236,9 +228,9 @@ mesh <- generate_mesh(lattice_simplified, maximum_area)
 
 # Plot
 plot <- plot.fdaPDE_mesh(mesh) + 
-  xlab("") + ylab("") + ggtitle("Mesh") +
+  mesh_generation_examples_plot_settings() +
   xlim(xmin, xmax) + ylim(ymin, ymax) 
-ggsave(paste(directory.images, "9_mesh.jpg", sep = ""),
-       plot = plot, width = 6.5, height = 7, dpi = 200)
+ggsave(paste(directory.images, "9_mesh.pdf", sep = ""),
+       plot = plot, width = 6, height = 5, dpi = "print", units = "cm")
 
 

@@ -56,7 +56,6 @@ RUN[["Pre-Processing"]] <- FALSE
 RUN[["Mesh Generation"]] <- FALSE
 RUN[["Mean estimation"]] <- FALSE
 RUN[["Optimal nComp selection"]] <- FALSE
-RUN[["Optimal components"]] <- FALSE
 RUN[["Clustering at locations"]] <- FALSE
 
 
@@ -293,10 +292,14 @@ scores <- scores
 loadings <- loadings
 loadings_nodes <- loadings_nodes
 
-# Plot components
+# Plot components HR all
 if(PLOT){
-  plot <- plot.components(locations, loadings, size = 0.5)
-  ggsave(paste(directory.images, "components_all.jpg", sep = ""),
+  loadings_HR <- NULL
+  for(h in 1:nComp){
+    loadings_HR <- cbind(loadings_HR, field.eval(grid, loadings_nodes[,h], mesh))
+  }
+  plot <- plot.components(grid, loadings_HR, type = "tile")
+  ggsave(paste(directory.images, "components_all_HR.jpg", sep = ""),
          plot = plot, width = 3*5, height = 3*4, dpi = 200)
 }
 
@@ -305,6 +308,17 @@ if(PLOT){
   plot <- plot.nComp_selection(residuals_norm, nComp, nComp_opt)
   ggsave(paste(directory.images, "nComp_selection.jpg", sep = ""),
          plot = plot, width = 9, height = 6, dpi = 200)
+}
+
+# Plot components HR selected
+if(PLOT){
+  loadings_HR <- NULL
+  for(h in 1:nComp_opt){
+    loadings_HR <- cbind(loadings_HR, field.eval(grid, loadings_nodes[,h], mesh))
+  }
+  plot <- plot.components(grid, loadings_HR, type = "tile", ncol = nComp_opt)
+  ggsave(paste(directory.images, "components_selected_HR.jpg", sep = ""),
+         plot = plot, width = 3*nComp_opt, height = 3*1, dpi = 200)
 }
 
 # Clean

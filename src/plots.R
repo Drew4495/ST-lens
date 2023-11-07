@@ -1,13 +1,24 @@
 # Plots ----
 # ||||||||||
 
+## Settings ----
+## |||||||||||||
+
+mesh_generation_examples_plot_settings <- function(){
+  theme_minimal() +
+    theme(axis.text = element_blank(),
+          axis.title = element_blank(),
+          panel.grid.major = element_blank())
+  
+}
+
 
 ## Mesh generation ----
 ## ||||||||||||||||||||
 
 # Plots the discretized domain
 
-plot.discretized_domain <- function(lattice) {
+plot.discretized_domain <- function(lattice, size = 1) {
   
   # Data
   domain <- lattice$domain        # Discretized domain \Omega_h
@@ -21,14 +32,14 @@ plot.discretized_domain <- function(lattice) {
   plot <- ggplot() + standard_plot_settings() +
     xlab("x") + ylab("y") +
     geom_sf(data = st_as_sf(domain), fill = "grey", alpha = 0.5, color = "black") +
-    geom_sf(data = st_as_sf(points.b), aes(color = "Outer Boundary"), size = 1) +
+    geom_sf(data = st_as_sf(points.b), aes(color = "Outer Boundary"), size = size) +
     scale_color_manual(name = "", values = cols.color)
   
   # Add holes
   if(pol_holes_number(domain) >= 1){
     for(i in 1:length(points.h)){
       plot <- plot +
-        geom_sf(data = st_as_sf(points.h[[i]]), aes(color = "Holes Boundary"), size = 1)
+        geom_sf(data = st_as_sf(points.h[[i]]), aes(color = "Holes Boundary"), size = size)
     }
   }
   
