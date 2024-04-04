@@ -7,7 +7,7 @@ graphics.off()
 
 VERBOSE <- TRUE
 PLOT <- TRUE
-fdaPDE <- TRUE
+fdaPDE <- FALSE
 
 # setwd("~/ST-lens")
 source("src/cat_utilities.R")
@@ -52,11 +52,11 @@ name.dataset <- "SlideseqCerebellum"
 
 # Code flow control
 RUN <- list()
-RUN[["Pre-Processing"]] <- FALSE
-RUN[["Mesh Generation"]] <- FALSE
-RUN[["Mean estimation"]] <- FALSE
-RUN[["Optimal nComp selection"]] <- FALSE
-RUN[["Clustering on HR grid"]] <- FALSE
+RUN[["Pre-Processing"]] <- TRUE
+RUN[["Mesh Generation"]] <- TRUE
+RUN[["Mean estimation"]] <- TRUE
+RUN[["Optimal nComp selection"]] <- TRUE
+RUN[["Clustering on HR grid"]] <- TRUE
 
 
 # |||||||||||||||||||
@@ -356,7 +356,7 @@ if(RUN[["Clustering on HR grid"]]){
   }
   
   # Save clusters
-  save(cluster_labels_HR, cluster_labels_refined_HR, cluster_labels_downsamples,
+  save(cluster_labels_HR, cluster_labels_refined_HR, cluster_labels_downsamples, grid,
        # Saving options
        file = paste(directory.results, name.dataset, "_clusters_on_HR_grid", ".RData", sep = ""))
   

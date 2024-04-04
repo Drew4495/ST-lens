@@ -29,6 +29,8 @@ louvain_clustering = function(clusternum, latent_dat, knearest=100){
 }
 
 
+
+
 ## Walktrap ----
 ## |||||||||||||
 
@@ -50,6 +52,10 @@ walktrap_clustering = function(clusternum, latent_dat, knearest=100){
   return("cluster_label"=cluster_label_new)
 }
 
+
+
+## Refine Cluster 10X ----
+## |||||||||||||
 
 # Refines spatial clustering of ST or Visium data.
 # - clusterlabels: The cluster label obtained
@@ -82,4 +88,82 @@ refine_cluster_10x = function(clusterlabels, location, shape="square"){
   }
   
   return(refined_pred)
+}
+
+
+
+## fx_CHAOS ----
+## |||||||||||||
+
+fx_CHAOS = function(clusterlabel, location){
+  # require(parallel)
+  matched_location=location
+  NAs = which(is.na(clusterlabel))
+  if(length(NAs>0)){
+    clusterlabel=clusterlabel[-NAs]
+    matched_location = matched_location[-NAs,]
+  }
+  matched_location = scale(matched_location)
+  dist_val = rep(0,length(unique(clusterlabel)))
+  count = 0
+  for(k in unique(clusterlabel)){
+    count = count + 1
+    location_cluster = matched_location[which(clusterlabel == k),]
+    if(length(location_cluster)==2){next}
+    #require(parallel)
+    results = mclapply(1:dim(location_cluster)[1], fx_1NN, location_in=location_cluster,mc.cores = 5)
+    dist_val[count] = sum(unlist(results))
+  }
+  dist_val = na.omit(dist_val)
+  return(sum(dist_val)/length(clusterlabel))
+  
+}
+
+
+
+## fx_1NN ----
+## |||||||||||||
+#' @import pdist
+fx_1NN = function(i,location_in){
+  # library(pdist)
+  line_i = rep(0,dim(location_in)[1])
+  line_i = pdist(location_in[i,],location_in[-i,])@dist
+  return(min(line_i))
+}
+
+
+
+## fx_KNN ----
+## |||||||||||||
+fx_kNN = function(i,location_in,k,cluster_in){
+  #library(pdist)
+  line_i = rep(0,dim(location_in)[1])
+  line_i = pdist(location_in[i,],location_in[-i,])@dist
+  ind = order(line_i)[1:k]
+  cluster_use = cluster_in[-i]
+  if(sum(cluster_use[ind] != cluster_in[i])>(k/2)){
+    return(1)
+  }else{
+    return(0)
+  }
+  
+}
+
+
+
+## fx_PAS ----
+## |||||||||||||
+
+fx_PAS = function(clusterlabel, location){
+  # require(parallel)
+  
+  matched_location=location
+  NAs = which(is.na(clusterlabel))
+  if(length(NAs>0)){
+    clusterlabel=clusterlabel[-NAs]
+    matched_location = matched_location[-NAs,]
+  }
+  
+  results = mclapply(1:dim(matched_location)[1], fx_kNN, location_in=matched_location,k=10,cluster_in=clusterlabel, mc.cores = 5)
+  return(sum(unlist(results))/length(clusterlabel))
 }

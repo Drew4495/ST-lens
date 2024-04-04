@@ -7,7 +7,7 @@ graphics.off()
 
 VERBOSE <- TRUE
 PLOT <- TRUE
-fdaPDE <- TRUE
+fdaPDE <- FALSE
 
 # setwd("~/ST-lens")
 source("src/cat_utilities.R")
@@ -58,7 +58,7 @@ RUN[["Mean estimation"]] <- FALSE
 RUN[["Optimal nComp selection"]] <- FALSE
 RUN[["Optimal components"]] <- FALSE
 RUN[["Clustering at locations"]] <- FALSE
-RUN[["Clustering on HR grid"]] <- FALSE
+RUN[["Clustering on HR grid"]] <- TRUE
 
 
 # |||||||||||||||||||
@@ -385,7 +385,7 @@ if(RUN[["Clustering on HR grid"]]){
   
   # Save clusters
   save(cluster_labels_HR, cluster_labels,
-       ARI, nComp_opt,
+       ARI, nComp_opt, grid,
        # Saving options
        file = paste(directory.results, name.dataset, "_clusters_on_HR_grid", "_nComp", nComp_opt, ".RData", sep = ""))
   
