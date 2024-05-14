@@ -1,5 +1,4 @@
 # Mesh generation ----
-# ||||||||||||||||||||
 
 ## Utilities ----
 ## ||||||||||||||
@@ -43,9 +42,7 @@ pol_clean <- function(pol, remove_holes = FALSE, minimum_area_hole = NULL){
         if(pol@polygons[[1]]@Polygons[[i]]@area > minimum_area_hole){
           holes <- c(holes, pol@polygons[[1]]@Polygons[[i]])
         } else {
-          if(VERBOSE){
-            cat("\nAn hole has been removed!\n")
-          }
+          cat("\nAn hole has been removed!\n")
         }
       } else {
         holes <- c(holes, pol@polygons[[1]]@Polygons[[i]])
@@ -55,9 +52,7 @@ pol_clean <- function(pol, remove_holes = FALSE, minimum_area_hole = NULL){
         max_area <- pol@polygons[[1]]@Polygons[[i]]@area
         domain <- pol@polygons[[1]]@Polygons[[i]]
       } else{
-        if(VERBOSE){
-          cat("\nSome outliers have been removed!\n")
-        }
+        cat("\nSome outliers have been removed!\n")
       }
     }
   }
