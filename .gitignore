@@ -8,7 +8,7 @@ images
 # results
 results
 
-# Exensions to be ignored
+# Extensions to be ignored
 *.RData
 *.DS_Store
 *.aux
@@ -16,6 +16,5 @@ results
 *.fls
 *.log
 *.synctex.gz
-*.pdf
 *.zip
 .Rhistory
