@@ -5,6 +5,9 @@
 
 ![fPCA Overview](README_images/ST_Method_Overview_Vertical.png)
 
+A non-convexity (concavity) ....
+![Convexity and Non-Convexity Example](README_images/convex.png)
+
 ## Tutorials
 
 - [fPCA 2D Tutorial (code on GitHub)](https://github.com/Drew4495/ST-lens/blob/main/Tutorials/fPCA_2D.html)  
