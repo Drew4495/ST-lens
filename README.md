@@ -7,7 +7,8 @@
 ## Tutorials
 
 - [fPCA 2D Tutorial (code on GitHub)](https://github.com/Drew4495/ST-lens/blob/main/Tutorials/fPCA_2D.html)  
-- [fPCA 2D Tutorial (rendered)](https://htmlpreview.github.io/?https://github.com/Drew4495/ST-lens/blob/main/Tutorials/fPCA_2D.html)
+- [fPCA 2D Tutorial (rendered)](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Drew4495/ST-lens/main/Tutorials/fPCA_2D.html)
+
 
 
 
