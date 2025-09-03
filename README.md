@@ -1,6 +1,6 @@
 # fPCA for Spatial Transcriptomics
 
-- 3-4 sentence of fPCA
+Functional Principal Component Analysis (fPCA) is a fast and accurate method for spatial domain detection in spatial transcriptomics. By modeling gene expression patterns as smooth functions over a mesh representation of tissue, fPCA better captures complex geometries (including holes and non-convexities) than methods relying on Euclidean distance or graph structures. Compared to leading algorithms, it offers greater interpretability through a single smoothing parameter, reduced runtime, and improved accuracy across both simulated and real datasets (e.g., HER2 breast cancer, human cortex, mouse cerebellum). These features make fPCA a scalable and robust tool for exploring tissue organization and gene expression architecture
 
 ![fPCA Overview](README_images/ST_Method_Overview_Vertical.png)
 
@@ -8,6 +8,8 @@ A non-convexity (concavity) ....
 ![Convexity and Non-Convexity Example](README_images/convex.png)
 
 Photo adapted from https://undergroundmathematics.org/glossary/convex-shape
+
+
 
 
 ## Tutorials
