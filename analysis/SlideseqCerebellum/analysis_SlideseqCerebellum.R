@@ -1,0 +1,348 @@
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# %% Analysis SlideseqCerebellum dataset %%
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+rm(list = ls())
+graphics.off()
+
+
+## ||||||||||||||||||||
+# libraries ----
+## ||||||||||||||||||||
+
+## plots
+library(ggplot2)
+library(grid)
+library(gridExtra)
+library(viridis)
+
+## Spatial data
+library(sp)
+library(sf)
+library(rmapshaper)
+library(spatstat)
+
+## fdaPDE
+library(fdaPDE)
+library(fdaPDE2)
+
+# ARI performance index
+library(mclust)
+
+
+
+
+#=============================================================================#
+
+
+## ||||||||||||||||||||
+# functions ----
+## ||||||||||||||||||||
+source("src/utils/cat.R")
+source("src/utils/directories.R")
+source("src/utils/geometry.R")
+source("src/utils/plots.R")
+source("src/utils/errors.R")
+source("src/plots.R")
+
+
+
+#=============================================================================#
+
+
+cat.script_title("Analysis SlideseqCerebellum dataset")
+
+## ||||||||||||||||||||
+# global variables ----
+## ||||||||||||||||||||
+
+cat.section_title("Global variables")
+
+## dataset name
+name_dataset <- "SlideseqCerebellum"
+
+## directories
+path_data <- paste("data/", name_dataset, "/", sep = "")
+path_images <- paste("images/", name_dataset, "/", sep = "")
+mkdir(c(path_images))
+path_images <- paste("images/", name_dataset, "/analysis/", sep = "")
+mkdir(c(path_images))
+path_results <- paste("results/", name_dataset, "/", sep = "")
+mkdir(c(path_results))
+
+## figures dimensions
+figure_width <- 8
+figure_height <- 8
+
+
+
+
+#=============================================================================#
+
+
+
+
+## ||||||||||||||||||||
+# data ----
+## ||||||||||||||||||||
+
+
+## counts and locations ----
+
+## load
+cat.section_title("Data")
+load(paste(path_data, "preprocessed_data.RData", sep = ""))
+
+# data content
+# - locations:      (data.frame)    n_locations x 2
+# - counts:         (dgCMatrix)     n_genes x n_locations
+# - true_labels:    (data.frame)    n_locations x 1  (NULL if not available)
+
+
+## mesh ----
+
+## load
+cat.section_title("Mesh")
+load(paste(path_data, "mesh.RData", sep = ""))
+
+## stats
+cat("\nStats")
+cat(paste("\n- Number of locations:", nrow(locations)))
+cat(paste("\n- Number of elements: ", nrow(mesh$triangles)))
+cat(paste("\n- Number of nodes: ", nrow(mesh$nodes)))
+
+## plot mesh
+plot <- plot.fdaPDE_mesh(mesh) + ggtitle("Mesh")
+plot
+
+
+## data/mesh alignment ----
+
+## removing locations outside the domain
+indexes.discarded_locations <- is.na(over(SpatialPoints(locations), lattice$domain))
+names_locations <- names_locations[!indexes.discarded_locations]
+locations <- locations_initial[names_locations,]
+counts <- counts[, names_locations]
+
+## stats
+cat("\nStats")
+cat(paste("\n- Initial number of locations:", nrow(locations_initial)))
+cat(paste("\n- Final number of locations:", nrow(locations)))
+cat(paste("\n- Initial number of genes: ", nrow(counts_initial)))
+cat(paste("\n- Final number of genes: ", nrow(counts)))
+
+## plot final locations
+plot <- plot.final_locations(SpatialPoints(locations_initial),
+                             SpatialPoints(locations), lattice) +
+        ggtitle("Final locations")
+plot
+
+
+
+
+#=============================================================================#
+
+
+
+
+## ||||||||||||||||||||
+# fPCA analysis ----
+## ||||||||||||||||||||
+
+
+## Prep for fPCA ----
+## ||||||||||||||||||||
+cat.section_title("fPCA analysis")
+
+## Save input data for time trials script
+filepath <- paste(path_results, "domain_input_for_FPCA.RData", sep = "")
+save(mesh, grid, counts, locations, file=filepath)
+
+## HR grid
+grid_step <- 25
+grid <- square_grid(SpatialPoints(locations)@bbox, grid_step, seed_point = seed_point)
+grid <- grid[!is.na(over(SpatialPoints(grid), lattice$domain)),]
+
+## grid plot
+plot <- ggplot() +
+  standard_plot_settings_fields() + ggtitle("HR grid") +
+  geom_sf(data = st_as_sf(SpatialPoints(grid)), color = "black", size = 0.25) +
+  geom_sf(data = st_as_sf(SpatialPoints(locations)), color = "red", size = 0.25)
+ggsave(paste(path_images, "1_HR_grid.pdf", sep = ""),
+       plot = plot, width = figure_width, height = figure_height, dpi = "print", units = "cm")
+
+
+## prepare data
+mesh_data <- list(
+  nodes = as.matrix(mesh$nodes),
+  edges = as.matrix(mesh$edges),
+  elements = as.matrix(mesh$triangles),
+  neigh = as.matrix(mesh$neighbors),
+  boundary = as.matrix(as.numeric(mesh$nodesmarkers))
+)
+domain <- fdaPDE2::Mesh(mesh_data)
+data <- fdaPDE2::functional_data(
+  domain = domain,
+  X = counts, 
+  locations = locations
+)
+
+## model parameters
+n_comp <- 9
+
+## lambda selected
+#lambda_selected <-  hyperparameters(2*1e3)
+lambda_grid <-  hyperparameters(10^seq(-6, 6, by = 0.2))
+
+
+
+## Fit Model ----
+## ||||||||||||||||||||
+
+## Start timer
+tic("fPCA Analysis")
+tic("Model initialization")
+
+## fPCA model initialization
+model_fPCA <- fdaPDE2::fPCA(
+  data,
+  center = centering(calibrator = gcv(lambda_grid, seed=0)),
+  solver = sequential()
+)
+
+toc()
+tic("Model Fit")
+## lambda selected
+#lambda_selected <- hyperparameters(1e2)
+
+## fPCA model fit
+model_fPCA$fit(
+  calibrator = gcv(lambda_grid, seed=0),
+  n_pc = n_comp
+)
+
+## Finish timer
+toc()
+toc()
+
+
+
+## Mean ----
+## ||||||||||||||||||||
+
+## mean
+mean <- model_fPCA$results$X_mean
+mean_locs <- evaluate_field(locations, mean, mesh)
+mean_HR <- evaluate_field(grid, mean, mesh)
+
+## plot mean tile
+plot <- plot.field_tile_original(grid, mean_HR, LEGEND = TRUE) +
+  standard_plot_settings_fields() +
+  ggtitle("Mean_HR: interpolated")
+plot
+ggsave(paste(path_images, "2_mean.pdf", sep = ""),
+       plot = plot, width = figure_width, height = figure_height, dpi = "print", units = "cm")
+
+## plot mean at locations
+plot <- plot.field_points(locations, mean_locs, size = 0.2) +
+  standard_plot_settings_fields() +
+  ggtitle("Mean: at locations")
+plot
+ggsave(paste(path_images, "2_mean_at_locations.pdf", sep = ""),
+       plot = plot, width = figure_width*1.5, height = figure_height*1.5, dpi = "print", units = "cm")
+
+
+
+## Loadings Renormalization ----
+## ||||||||||||||||||||
+
+## loadings re-normalization
+loadings_NotNormalized <- model_fPCA$results$loadings
+scores_NotNormalized <- model_fPCA$results$scores
+loadings <- model_fPCA$results$loadings
+scores <- model_fPCA$results$scores
+loadings_locs <- NULL
+loadings_HR <- NULL
+loadings_locs_NotNormalized <- NULL
+loadings_HR_NotNormalized <- NULL
+for(i in 1:n_comp) {
+  loadings_HR_NotNormalized <- cbind(loadings_HR_NotNormalized, evaluate_field(grid, loadings_NotNormalized[, i], mesh))
+  loadings_locs_NotNormalized <- cbind(loadings_locs_NotNormalized, evaluate_field(locations, loadings_NotNormalized[, i], mesh))
+  loadings[, i] <- loadings[, i] * norm_l2(scores[, i])
+  scores[, i] <- scores[, i]/norm_l2(scores[, i])
+  loadings_HR <- cbind(loadings_HR, evaluate_field(grid, loadings[, i], mesh))
+  loadings_locs <- cbind(loadings_locs, evaluate_field(locations, loadings[ ,i], mesh))
+}
+
+
+## Plot HR components
+plot_list <- list()
+limits = range(loadings)
+for(i in 1:n_comp) {
+  plot_list[[i]] <- plot.field_tile(grid, loadings_HR[, i], limits = limits) +
+    standard_plot_settings_fields() +
+    theme(legend.position="none") +
+    ggtitle(paste("w", i, sep = ""))
+}
+#grid.arrange(grobs = plot_list, nrow = ceiling(sqrt(n_comp)))
+plot <- arrangeGrob(grobs = plot_list, nrow = ceiling(sqrt(n_comp)))
+ggsave(paste(path_images, "3_components_at_tiles_HR.pdf", sep = ""),
+       plot = plot, width = figure_width*4, height = figure_height*4, dpi = "print", units = "cm")
+
+
+## plot components at locations
+plot_list <- list()
+limits = range(loadings_locs)
+for(i in 1:n_comp) {
+  plot_list[[i]] <- plot.field_points(locations, loadings_locs[, i], limits = limits, size = 0.2) +
+    standard_plot_settings_fields() +
+    theme(legend.position = "none") +
+    ggtitle(paste("w", i, sep = "")) 
+}
+plot <- arrangeGrob(grobs = plot_list, nrow = ceiling(sqrt(n_comp)))
+grid.arrange(plot)
+ggsave(paste(path_images, "3_components_at_locations.pdf", sep = ""),
+       plot = plot, width = figure_width*4, height = figure_height*4, dpi = "print", units = "cm")
+
+
+
+
+
+#=============================================================================#
+
+
+
+
+## ||||||||||||||||||||
+# saving results ----
+## ||||||||||||||||||||
+
+## Extract lambda
+lambda_GCV_opt <- model_fPCA$results$calibration$lambda_centering_opt$space
+
+## final data
+save(
+  ## initial data
+  locations_initial,   names_locations_initial,
+  counts_initial, names_genes.initial,
+  true_labels_initial,
+  ## analyzed data
+  locations, names_locations,
+  counts, names_genes,
+  true_labels,
+  ## file name
+  file = paste(path_data, "/analyzed_data.RData", sep = "")
+  )
+
+## analysis results
+save(n_comp, mean, lambda_GCV_opt,
+     scores, loadings,
+     loadings_locs, loadings_HR,
+     loadings_locs_NotNormalized, loadings_HR_NotNormalized,
+     file = paste(path_results, "fPCA.RData", sep = "")
+     )
+
+## Save just model_fPCA results
+save(model_fPCA,
+     file = paste(path_results, "just_model_fPCA.RData", sep = "")
+     )
