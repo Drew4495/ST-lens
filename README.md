@@ -1,7 +1,6 @@
-# ST-lens
+# fPCA for Spatial Transcriptomics
 
-- image of overview form manuscript
-- Image showing convexity
+- 3-4 sentence of fPCA
 
 ![fPCA Overview](README_images/ST_Method_Overview_Vertical.png)
 
@@ -13,6 +12,7 @@ Photo adapted from https://undergroundmathematics.org/glossary/convex-shape
 
 ## Tutorials
 
+Tutorials created by Marco Galliani (acknowledged in manuscript)
 - [fPCA 2D Tutorial (code on GitHub)](https://github.com/Drew4495/ST-lens/blob/main/Tutorials/fPCA_2D.html)  
 - [fPCA 2D Tutorial (rendered)](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Drew4495/ST-lens/main/Tutorials/fPCA_2D.html)
 
