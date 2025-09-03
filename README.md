@@ -3,7 +3,7 @@
 - image of overview form manuscript
 - Image showing convexity
 
-![fPCA Overview](ST-lens/README_images/ST_Method_Overview_Vertical.png)
+![fPCA Overview](/ST-lens/README_images/ST_Method_Overview_Vertical.png)
 
 ## Tutorials
 
