@@ -3,6 +3,7 @@
 - image of overview form manuscript
 - Image showing convexity
 
+![Alt text]("ST-lens/README images/ST_Method_Overview_Vertical.pdf")
 
 ## Tutorials
 
