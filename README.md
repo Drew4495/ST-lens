@@ -7,6 +7,7 @@
 
 A non-convexity (concavity) ....
 ![Convexity and Non-Convexity Example](README_images/convex.png)
+
 Photo adapted from https://undergroundmathematics.org/glossary/convex-shape
 
 
