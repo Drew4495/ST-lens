@@ -4,13 +4,20 @@
 - Image showing convexity
 
 
-## Tutorial
+## Tutorials
+
+- [fPCA 2D Tutorial (code on GitHub)](https://github.com/Drew4495/ST-lens/blob/main/Tutorials/fPCA_2D.html)  
+- [fPCA 2D Tutorial (rendered)](https://htmlpreview.github.io/?https://github.com/Drew4495/ST-lens/blob/main/Tutorials/fPCA_2D.html)
+
 
 
 ## Manuscript scripts
 
 - Talk about manuscript (in review). Breifly talk about 3 different tissues
 - For full scripts that recreated the manuscript, see additional readme.md in ???? and the scripts in 
+
+
+
 
 
 
