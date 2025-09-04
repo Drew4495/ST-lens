@@ -1,6 +1,6 @@
 ## Workflow for manuscript
 
-Order: **1a) Meshing → 1b) Preprocessing → Analysis (Functional PCA) → Decide # Components → Clustering → Visualization**
+Order: **1a) Meshing → 1b) Preprocessing → 2) Analysis (Functional PCA) → 3) Decide # Components → 4) Clustering → 5) Visualization**
 
 Meshing and Preprocessing scripts are interchangeable. Both need to be completed before "Analysis" script is run.
 For specific scripts used in HER2, DLPFC, and Cerebellum datasets, in the corresponding manuscript, consult the """" in """"
