@@ -55,7 +55,7 @@ Order: **Meshing → Preprocessing → Analysis (Functional PCA) → Decide # Co
   - `results/DLPFC/nComp_opt.RData` (e.g., `nComp_opt <- 3`)  
 
 - **Clustering**  
-  Run **Walktrap community detection** on the first `nComp_opt` fPCA components on a high-resolution grid, then assign each original spot the label of its nearest grid point. Score with **Adjusted Rand Index (ARI)** vs ground truth and **align cluster IDs** to ground-truth IDs via a greedy ARI-based mapping. (Also repeats for NSC = 8 and 2 for comparison.)  
+  Run **Walktrap community detection** on the first `nComp_opt` fPCA components on a high-resolution grid, then assign each original spot the label of its nearest grid point. Score with **Adjusted Rand Index (ARI)** vs ground truth and **align cluster IDs** to ground-truth IDs via a greedy ARI-based mapping. (Some may repeat for differnts NSC numbers for comparison.)  
   _Outputs (per NSC):_  
   - `results/DLPFC/fPCA_clustering_results_GCV_NoMean_{NSC}.RData` (lists of HR/LR labels and ARIs, keyed by `knearest_{K}`)  
   - `results/DLPFC/fPCA_clustering_results_ALIGNED_GCV_NoMean_{NSC}.RData` (aligned versions)  
