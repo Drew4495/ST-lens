@@ -1,4 +1,4 @@
-## Workflow for manuscript
+# Workflow for manuscript
 
 Order: **1a) Meshing → 1b) Preprocessing → 2) Analysis (Functional PCA) → 3) Decide # Components → 4) Clustering → 5) Visualization**
 
