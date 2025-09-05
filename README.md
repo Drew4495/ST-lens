@@ -9,7 +9,7 @@ It also provides inherent high-resolution reconstructions and scales to dense, h
 
 ![fPCA Overview](README_images/ST_Method_Overview_Vertical.png)
 
-A non-convex shape is one that in which at least there exists a pair of points in which a straight line segment between them is contained completely within the shape itself. In the example below, the red lines satisfy this property while the blue line does not, indicating the right shape is non-convex.
+A non-convex shape is one that in which at least there exists a pair of points in which a straight line segment between them is not contained completely within the shape itself. In the example below, the red lines satisfy the convex property while the blue line does not, indicating the right shape is non-convex.
 ![Convexity and Non-Convexity Example](README_images/convex.png)
 
 Photo adapted from https://undergroundmathematics.org/glossary/convex-shape
