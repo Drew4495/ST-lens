@@ -14,6 +14,8 @@ A non-convex shape is one that in which at least there exists a pair of points i
 
 Photo adapted from https://undergroundmathematics.org/glossary/convex-shape
 
+For example, in brain tissue, the gray matter is indeed characterized by the presence of gyri and sulci, exemplifying non-convexities with its folded structure, which are fundamental to its proper functioning. Proper modeling of these spatial dependencies, rather than relying on euclidean distances, is not only a more theoretically accurate representation, but also shows more accurate spatial domain detection when using fPCA. 
+
 
 
 
