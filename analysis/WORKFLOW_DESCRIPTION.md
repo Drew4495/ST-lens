@@ -61,7 +61,7 @@ Each dataset has the corresponding scripts
   - `images/{name_dataset}/NSC_optimization/Optimal_nComp_Selection.pdf`
   - `results/{name_dataset}/nComp_opt.RData` (e.g., `nComp_opt <- 3`)
 
-- ### clustering_{name_dataset}.R` 
+- ### `clustering_{name_dataset}.R` 
   Run **Walktrap community detection** on the first `nComp_opt` fPCA components on a high-resolution grid, then assign each original spot the label of its nearest grid point. Score with **Adjusted Rand Index (ARI)** vs ground truth and **align cluster IDs** to ground-truth IDs via a greedy ARI-based mapping. (Optionally repeat for other NSC values, e.g., 8 and 2, for comparison.)
 
   **Inputs**
